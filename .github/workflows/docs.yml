@@ -29,7 +29,7 @@ jobs:
       - name: Build docs
         shell: powershell
         run: |
-          cd $env:GITHUB_WORKSPACE/assets/parts
+          cd $env:GITHUB_WORKSPACE/parts
           python -m pip install pydoc-markdown
           pydoc-markdown
           $file = get-content emio-sofa-api.md
@@ -58,4 +58,4 @@ jobs:
           target_commitish: ${{ github.sha }}
           draft: false
           files: |
-            assets/parts/emio-sofa-api.md
+            parts/emio-sofa-api.md
