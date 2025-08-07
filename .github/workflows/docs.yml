@@ -35,6 +35,7 @@ jobs:
           $file = get-content emio-sofa-api.md
           $file | ForEach-Object {if ($_.ReadCount -eq 1) {$_ -replace "^.*", "# Emio SOFA API"} else {$_}} | Set-Content .\emio-sofa-api.md
           cd $env:GITHUB_WORKSPACE
+
       - name: Set env vars and rename executables
         shell: powershell
         run: |
@@ -48,6 +49,15 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_NAME=$RELEASE_NAME"
           Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_TAGNAME=$RELEASE_TAGNAME"
           Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_DATE=$RELEASE_DATE"
+
+      - name: Delete old release
+        if: success() || failure()
+        uses: dev-drprasad/delete-tag-and-release@v1.0.1
+        with:
+          tag_name: release-${{ github.ref_name }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          delete_release: true
+          
       - name: Create Release
         if: success() 
         uses: softprops/action-gh-release@v2.2.2
