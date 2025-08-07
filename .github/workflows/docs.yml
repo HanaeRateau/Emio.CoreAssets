@@ -9,8 +9,7 @@ on:
   schedule:
     - cron: '0 3 * * *' # nightly job at 3am UTC
 
-permissions:
-  contents: read
+permissions: write-all
 
 jobs:
   build:
