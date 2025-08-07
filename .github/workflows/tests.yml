@@ -1,0 +1,159 @@
+name: Run Tests
+
+on: 
+  pull_request:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 3 * * *' # nightly job at 3 am UTC
+
+env:
+  SOFA_ROOT: ${{ github.workspace }}/sofa-install
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }} with SOFA branch ${{ matrix.sofa_branch }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest] #, macos-13, windows-2022]
+        sofa_branch: [master]
+
+    steps:    
+      - name: Checkout source code
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.WORKSPACE_SRC_PATH }}
+
+      - name: Download SOFA and plugins binaries
+        # Download SOFA from Jenkins
+        shell: bash
+        run: |      
+          echo "SOFA_ROOT=$SOFA_ROOT"
+          mkdir -p "${{ runner.temp }}/sofa_tmp/zip" "${{ runner.temp }}/sofa_tmp/binaries" $SOFA_ROOT
+          urlPrefix="https://ci.inria.fr/sofa-ci-dev/job/nightly-generate-binaries/CI_BRANCH=${{ matrix.sofa_branch }},CI_SCOPE=full"
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            urlSuffix="artifact/MacOS/*zip*/MacOS.zip"
+          else 
+            urlSuffix="artifact/${{ runner.os }}/*zip*/${{ runner.os }}.zip"
+          fi
+          url="$urlPrefix/lastBuild/$urlSuffix"
+          if ! curl --output /dev/null --silent --head --fail "$url"; then
+            echo 'There is no artifact for "lastBuild". Falling back on "lastSuccessfulBuild".'
+            url="$urlPrefix/lastSuccessfulBuild/$urlSuffix"
+          fi
+          echo "Getting SOFA from $url"
+          curl --http1.0 --output "${{ runner.temp }}/sofa_tmp/${{ runner.os }}.zip" -L $url
+          unzip -qq "${{ runner.temp }}"/sofa_tmp/${{ runner.os }}.zip -d "${{ runner.temp }}/sofa_tmp/zip"
+          unzip -qq "${{ runner.temp }}"/sofa_tmp/zip/${{ runner.os }}/SOFA_*.zip -d "${{ runner.temp }}/sofa_tmp/binaries"
+          $SUDO mv "${{ runner.temp }}"/sofa_tmp/binaries/SOFA_*/* $SOFA_ROOT
+          cp "$SOFA_ROOT/share/sofa/icons"/* "$SOFA_ROOT/share/sofa/"
+
+          # SoftRobots.Inverse
+          echo "First, removing SoftRobots.Inverse from SOFA binaries (if any)"
+          rm -rf "$SOFA_ROOT/plugins"/SoftRobots.Inverse*
+          rm -rf "$SOFA_ROOT/bin"/SoftRobots.Inverse*
+          rm -rf "$SOFA_ROOT/lib"/SoftRobots.Inverse*
+          
+          SoftRobotsInverse_ROOT="$SOFA_ROOT/plugins/SoftRobots.Inverse"
+          mkdir -p "${{ runner.temp }}/sr_tmp/zip" "${{ runner.temp }}/sr_tmp/binaries" "$SoftRobotsInverse_ROOT"
+          url="https://github.com/SofaDefrost/SoftRobots.Inverse/releases/download"
+          url="${url}/release-main/SoftRobots.Inverse_main_for-SOFA-${{ matrix.sofa_branch }}_${{ runner.os }}.zip"
+          echo "Getting SoftRobots.Inverse from $url"
+          curl --output "${{ runner.temp }}/sr_tmp/zip/SoftRobots.Inverse.zip" -L $url
+          unzip -qq "${{ runner.temp }}/sr_tmp/zip/SoftRobots.Inverse.zip" -d "${{ runner.temp }}/sr_tmp/binaries"
+          mv "${{ runner.temp }}"/sr_tmp/binaries/SoftRobots.Inverse_*/* "$SoftRobotsInverse_ROOT"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cp "$SoftRobotsInverse_ROOT/bin"/* "$SOFA_ROOT/bin/"
+          fi
+
+          # Cosserat
+          echo "First, removing Cosserat from SOFA binaries (if any)"
+          rm -rf "$SOFA_ROOT/plugins"/Cosserat*
+          rm -rf "$SOFA_ROOT/bin"/Cosserat*
+          rm -rf "$SOFA_ROOT/lib"/Cosserat*
+          
+          Cosserat_ROOT="$SOFA_ROOT/plugins/Cosserat"
+          mkdir -p "${{ runner.temp }}/cosserat_tmp/zip" "${{ runner.temp }}/cosserat_tmp/binaries" "$Cosserat_ROOT"
+          url="https://github.com/SofaDefrost/Cosserat/releases/download"
+          url="${url}/release-${{ matrix.sofa_branch }}/Cosserat_${{ matrix.sofa_branch }}_for-SOFA-${{ matrix.sofa_branch }}_${{ runner.os }}.zip"
+          echo "Getting Cosserat from $url"
+          curl --output "${{ runner.temp }}/cosserat_tmp/zip/Cosserat.zip" -L $url
+          unzip -qq "${{ runner.temp }}/cosserat_tmp/zip/Cosserat.zip" -d "${{ runner.temp }}/cosserat_tmp/binaries"
+          mv "${{ runner.temp }}"/cosserat_tmp/binaries/Cosserat_*/* "$Cosserat_ROOT"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cp "$Cosserat_ROOT/bin"/* "$SOFA_ROOT/bin/"
+          fi
+
+          # SofaGLFW & SofaImGui
+          echo "First, removing SofaGLFW and SofaImGui from SOFA binaries (if any)"
+          rm -rf "$SOFA_ROOT/plugins"/SofaGLFW*
+          rm -rf "$SOFA_ROOT/bin"/SofaGLFW*
+          rm -rf "$SOFA_ROOT/lib"/SofaGLFW*
+          rm -rf "$SOFA_ROOT/plugins"/SofaImGui*
+          rm -rf "$SOFA_ROOT/bin"/SofaImGui*
+          rm -rf "$SOFA_ROOT/lib"/SofaImGui*
+          
+          SofaGLFW_ROOT="$SOFA_ROOT/plugins/SofaGLFW"
+          mkdir -p "${{ runner.temp }}/glfw_tmp/zip" "${{ runner.temp }}/glfw_tmp/binaries" "$SofaGLFW_ROOT"
+          url="https://github.com/SofaComplianceRobotics/SofaGLFW/releases/download"
+          url="${url}/release-robotics-with-imgui/SofaGLFW_robotics_with_imgui_for-SOFA-${{ matrix.sofa_branch }}_${{ runner.os }}.zip"
+          echo "Getting SofaGLFW and SofaImGui from $url"
+          curl --output "${{ runner.temp }}/glfw_tmp/zip/SofaGLFW.zip" -L $url
+          unzip -qq "${{ runner.temp }}/glfw_tmp/zip/SofaGLFW.zip" -d "${{ runner.temp }}/glfw_tmp/binaries"
+          mv "${{ runner.temp }}"/glfw_tmp/binaries/SofaGLFW_*/* "$SofaGLFW_ROOT"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            cp "$SofaGLFW_ROOT/bin"/* "$SOFA_ROOT/bin/"
+          fi
+    
+      - name: Move python packages
+        shell: bash
+        run: |    
+            if [[ "$RUNNER_OS" != "macOS" ]]; then
+                cd $SOFA_ROOT/plugins
+                # Copy packages
+                find ./ -type f |  sed -n 's|\(.*python3/site-packages\).*|\1|p' | uniq | grep -v '.*SofaPython3.*' | while IFS= read -r line; do
+                    cp -r --preserve=links ${line}/* ./SofaPython3/lib/python3/site-packages
+                    rm -rf ${line}
+                done
+                cd  ${GITHUB_WORKSPACE}
+            fi
+
+      - name: Additional Install 
+        run: |
+            if [[ "$RUNNER_OS" == "Linux" ]]; then
+                sudo apt install libopengl0 
+            fi
+
+      - name: Install Python
+        uses: actions/setup-python@v2
+        with:
+            python-version: "3.10"            
+    
+      - name: Install python dependencies
+        shell: bash
+        run: |
+            python -m pip install -r requirements.txt
+            python -m pip install pytest
+
+      - name: Run tests
+        shell: bash
+        run: |    
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            set PATH=%PATH%;"$SOFA_ROOT/bin"
+            set PYTHONPATH=%PYTHONPATH%;"$SOFA_ROOT/lib/python3/site-packages"
+            set PYTHONPATH=%PYTHONPATH%;"$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages"
+            set PYTHONPATH=%PYTHONPATH%;"$GITHUB_WORKSPACE/assets"
+          else
+            export PATH=$PATH:$SOFA_ROOT/bin
+            export PYTHONPATH=$PYTHONPATH:$SOFA_ROOT/lib/python3/site-packages
+            export PYTHONPATH=$PYTHONPATH:$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages
+            export PYTHONPATH=$PYTHONPATH:$GITHUB_WORKSPACE/assets
+          fi
+          cd  ${GITHUB_WORKSPACE}
+          python -m pytest assets/tests/
+
+          
+
