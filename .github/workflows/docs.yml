@@ -9,12 +9,12 @@ on:
   schedule:
     - cron: '0 3 * * *' # nightly job at 3am UTC
 
-permissions: write-all
-
 jobs:
   build:
     runs-on: windows-latest
-    permissions: write-all
+    permissions:
+      pull-requests: write
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
