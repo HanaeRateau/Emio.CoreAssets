@@ -15,9 +15,7 @@ permissions:
 jobs:
   build:
     runs-on: windows-latest
-    permissions:
-      contents: write
-      packages: write
+    permissions: write-all
 
     steps:
       - uses: actions/checkout@v4
