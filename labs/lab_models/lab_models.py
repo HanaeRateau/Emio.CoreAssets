@@ -152,7 +152,7 @@ def createScene(rootnode):
     leg.attachExtremity(load, 0)
 
     # Camera
-    camera = modelling.addChild(Camera())
+    modelling.addChild(Camera())
 
     # Base
     box = modelling.addChild("Base")
@@ -201,14 +201,13 @@ def createScene(rootnode):
                                             name="MotorController"))
 
             tracker = DotTracker(name="DotTracker",
-                                        root=rootnode,
-                                        nb_tracker=2,
-                                        show_video_feed=False,
-                                        track_colors=True,
-                                        comp_point_cloud=False,
-                                        scale=1,
-                                        rotation=camera.torealrotation,
-                                        translation=camera.torealtranslation)
+                                 root=rootnode,
+                                 configuration="extended",
+                                 nb_tracker=2,
+                                 show_video_feed=False,
+                                 track_colors=True,
+                                 comp_point_cloud=False,
+                                 scale=1)
 
             rootnode.addObject(tracker)        
         except RuntimeError:

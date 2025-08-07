@@ -4,6 +4,7 @@ import numpy as np
 from math import pi, cos
 from scipy import signal
 from operator import itemgetter
+from splib3.numerics import Quat, Vec3, vadd, vsub
 
 from emioapi import EmioAPI
 from emioapi.emiocamera import EmioCamera, CalibrationStatusEnum
@@ -16,13 +17,13 @@ CLIP_DIST = np.array([0.4, 0.1, 0.4])
 
 class DotTracker(Sofa.Core.Controller):
 
-    def __init__(self, root, nb_tracker=4,
+    def __init__(self, root, 
+                 configuration="extended", # configuration of Emio, either "compact" or "extended"
+                 nb_tracker=4,
                  show_video_feed=False,
                  compute_point_cloud=False,
                  track_colors=True,
                  scale=1,
-                 translation=[0, 0, 0],
-                 rotation=[0, 0, 0],
                  filter_alpha=0.5,
                  *args, **kwargs):
         
@@ -40,7 +41,10 @@ class DotTracker(Sofa.Core.Controller):
         self.trackersf2 = np.zeros((nb_tracker,3))
 
         self.tracker = EmioCamera(show=show_video_feed, 
-                                  compute_point_cloud=self.compute_point_cloud)
+                                  track_markers=track_colors,
+                                  compute_point_cloud=self.compute_point_cloud,
+                                  configuration=configuration
+                                  )
         
         self.node = root.addChild("DepthCamera")
 
@@ -48,17 +52,15 @@ class DotTracker(Sofa.Core.Controller):
             coord_pt = [0.0, 0, 0] * nb_tracker
 
             self.mo = self.node.addObject("MechanicalObject", name="Trackers", template="Vec3d",
-                                      position=coord_pt.copy(), showObject=True,
-                                      showObjectScale=7, drawMode=1, showColor=[0, 1., 0, 1])
+                                            position=coord_pt.copy(), showObject=True,
+                                            showObjectScale=7, drawMode=1, showColor=[0, 1., 0, 1])
 
         if self.compute_point_cloud:
             coord_pt = np.clip(self.tracker.point_cloud, -CLIP_DIST, CLIP_DIST)
 
             self.mo_point_cloud = self.node.addObject("MechanicalObject", name="pointCloud", template="Vec3d",
-                                                  position=coord_pt, showObject=True, showObjectScale=1,
-                                                  showColor=[0, 255, 0, 0.1],
-                                                  rotation=rotation, translation=translation,
-                                                  scale=scale*1e3)
+                                                        position=coord_pt, showObject=True, showObjectScale=1,
+                                                        showColor=[0, 255, 0, 0.1], scale=scale*1e3)
 
 
     def onAnimateBeginEvent(self, _):
@@ -75,7 +77,7 @@ class DotTracker(Sofa.Core.Controller):
         if self.track_colors:
             self.tracker.update()
             coord = self.tracker.trackers_pos
-            
+
             if len(coord) >= self.nb_tracker:
                 # Filter
                 arr = np.empty((self.nb_tracker, 3))

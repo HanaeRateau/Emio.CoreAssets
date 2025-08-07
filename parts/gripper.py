@@ -92,7 +92,7 @@ class Gripper(CenterPart):
                 mass = self.addChild("ComputeMass")
                 mass.addObject("MeshVTKLoader", filename=self.filepath + ".vtk")
                 mass.addObject('VolumeFromTetrahedrons',
-                               positions=mass.MeshVTKLoader.position.value,
+                               position=mass.MeshVTKLoader.position.value,
                                tetras=mass.MeshVTKLoader.tetras.value)
                 mass.VolumeFromTetrahedrons.init()
                 self.addObject('UniformMass', totalMass=mass.VolumeFromTetrahedrons.volume.value * self.massDensity.value)

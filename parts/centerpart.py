@@ -105,7 +105,7 @@ class CenterPart(Sofa.Prefab):
         part.addObject('MechanicalObject')
         mass = part.addChild("ComputeMass")
         mass.addObject('VolumeFromTetrahedrons',
-                       positions=part.MeshVTKLoader.position.value,
+                       position=part.MeshVTKLoader.position.value,
                        tetras=part.MeshVTKLoader.tetras.value)
         mass.VolumeFromTetrahedrons.init()
         part.addObject('UniformMass', totalMass=mass.VolumeFromTetrahedrons.volume.value * self.massDensity.value)

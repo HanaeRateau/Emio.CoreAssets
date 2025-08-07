@@ -197,9 +197,7 @@ def createScene(rootnode):
                                                        show_video_feed=False,
                                                        track_colors=True,
                                                        comp_point_cloud=False,
-                                                       scale=1,
-                                                       rotation=emio.Camera.torealrotation,
-                                                       translation=emio.Camera.torealtranslation))
+                                                       scale=1))
             sensor = dotTracker.mo
         except RuntimeError:
             Sofa.msg_error(__file__, "Camera not detected")
