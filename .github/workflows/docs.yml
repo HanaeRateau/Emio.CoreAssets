@@ -59,7 +59,7 @@ jobs:
           delete_release: true
           
       - name: Create Release
-        if: success() 
+        if: success() || failure()
         uses: softprops/action-gh-release@v2.2.2
         with:
           name: ${{ env.RELEASE_NAME }}
