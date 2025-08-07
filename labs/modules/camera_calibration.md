@@ -6,7 +6,7 @@ If you notice a large difference between the simulation and reality markers, you
 
 ### Set up Emio for Calibration
 
-<img src="assets/data/images/calibration_emio_setup.png" style="margin:25px;float:right;" width="38%" >
+![](assets/data/images/calibration_emio_setup.png){width=38% style="margin:25px;float:right;"}
 
 You will need (see the image):
 
