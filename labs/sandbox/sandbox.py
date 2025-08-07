@@ -171,14 +171,13 @@ def createScene(rootnode):
         if args.camera == "enable":
             try:
                 rootnode.addObject(DotTracker(name="DotTracker",
-                                                root=rootnode,
-                                                nb_tracker=int(args.nbTrackers),
-                                                show_video_feed=(args.cameraFeed == "enable"),
-                                                track_colors=True,
-                                                comp_point_cloud=False,
-                                                scale=1,
-                                                rotation=emio.Camera.torealrotation,
-                                                translation=emio.Camera.torealtranslation))
+                                             root=rootnode,
+                                             configuration=args.configuration,
+                                             nb_tracker=int(args.nbTrackers),
+                                             show_video_feed=(args.cameraFeed == "enable"),
+                                             track_colors=True,
+                                             comp_point_cloud=False,
+                                             scale=1))
             except RuntimeError:
                 Sofa.msg_error(__file__, "Camera not detected")
 

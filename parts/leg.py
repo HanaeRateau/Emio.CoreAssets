@@ -208,7 +208,7 @@ class Leg(Sofa.Prefab):
         volume = self.addChild("Volume")
         volume.addObject("MeshSTLLoader", filename=dataDirPath + self.legName.value + '.stl')
         volume.addObject("VolumeFromTriangles",
-                         positions=volume.MeshSTLLoader.position.value,
+                         position=volume.MeshSTLLoader.position.value,
                          triangles=volume.MeshSTLLoader.triangles.value)
         volume.init()
         self.totalMass = volume.VolumeFromTriangles.volume.value * self.massDensity.value
