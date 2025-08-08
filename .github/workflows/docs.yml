@@ -9,13 +9,13 @@ on:
   schedule:
     - cron: '0 3 * * *' # nightly job at 3am UTC
 
-jobs:
-  build:
-    runs-on: windows-latest
-    permissions:
+permissions:
       pull-requests: write
       contents: write
 
+jobs:
+  build:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -48,6 +48,8 @@ jobs:
           Add-Content -Path $env:GITHUB_ENV -Value "RELEASE_DATE=$RELEASE_DATE"
 
       - name: Delete old release
+        env:
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release delete ${{ env.RELEASE_TAGNAME }} --cleanup-tag -y
           
       - name: Create Release
