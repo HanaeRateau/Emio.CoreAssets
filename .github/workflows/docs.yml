@@ -39,7 +39,7 @@ jobs:
           $PROJECT_NAME = $env:GITHUB_REPOSITORY.Split('/')[1]
           Add-Content -Path $env:GITHUB_ENV -Value "PROJECT_NAME=$PROJECT_NAME"
           
-          $RELEASE_NAME = $env:GITHUB_REF_NAME
+          $RELEASE_NAME = $env:GITHUB_REF_NAME.Split('/')[
           $RELEASE_TAGNAME = "release-$RELEASE_NAME"
           $BRANCH_NAME = $RELEASE_NAME
           $RELEASE_DATE = (Get-Date -Format "yyyy-MM-dd (at HH:mm:ss UTC)")
@@ -51,7 +51,7 @@ jobs:
         if: success() || failure()
         uses: dev-drprasad/delete-tag-and-release@v1.0.1
         with:
-          tag_name: release-${{ github.ref_name }}
+          tag_name: ${{ env.RELEASE_TAGNAME }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           delete_release: true
           
