@@ -50,14 +50,14 @@ jobs:
 
       - name: Delete old release
         env:
-            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            GH_TOKEN: ${{ secrets.SUPPORT_TOKEN }}
         run: gh release delete ${{ env.RELEASE_TAGNAME }} --cleanup-tag -y
           
       - name: Create Release
         if: success() || failure()
         uses: softprops/action-gh-release@v2.3.2
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SUPPORT_TOKEN }}
         with:
           name: ${{ env.RELEASE_NAME }}
           tag_name: ${{ env.RELEASE_TAGNAME }}
