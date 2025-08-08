@@ -39,7 +39,7 @@ jobs:
           $PROJECT_NAME = $env:GITHUB_REPOSITORY.Split('/')[1]
           Add-Content -Path $env:GITHUB_ENV -Value "PROJECT_NAME=$PROJECT_NAME"
           
-          $RELEASE_NAME = $env:GITHUB_REF_NAME.Split('/')[
+          $RELEASE_NAME = $env:GITHUB_REF_NAME.Split('/')[1]
           $RELEASE_TAGNAME = "release-$RELEASE_NAME"
           $BRANCH_NAME = $RELEASE_NAME
           $RELEASE_DATE = (Get-Date -Format "yyyy-MM-dd (at HH:mm:ss UTC)")
